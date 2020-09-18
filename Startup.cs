@@ -28,12 +28,18 @@ namespace ProofOfDeliveryAPI
             services.AddCors();
             services.AddControllers();
 
-            // configure basic authentication 
+
+            // Mapping the configuration
+            var connectionSection = Configuration.GetSection("ConnectionStrings");
+            services.Configure<ConnectionStrings>(connectionSection);
+
+            // Configure basic authentication 
             services.AddAuthentication("BasicAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
 
-            // configure DI for application services
+            // Configure DI for application services
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IVehicleService, VehicleService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,7 +47,7 @@ namespace ProofOfDeliveryAPI
         {
             app.UseRouting();
 
-            // global cors policy
+            // Global cors policy
             app.UseCors(x => x
                 .AllowAnyOrigin()
                 .AllowAnyMethod()

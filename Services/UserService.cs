@@ -24,11 +24,9 @@ namespace ProofOfDeliveryAPI.Services
         {
             var user = await Task.Run(() => _users.SingleOrDefault(x => x.Username == username && x.Password == password));
 
-            // return null if user not found
             if (user == null)
                 return null;
 
-            // authentication successful so return user details without password
             return user.WithoutPassword();
         }
 
