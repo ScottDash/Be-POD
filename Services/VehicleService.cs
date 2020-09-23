@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using ProofOfDeliveryAPI.Helpers;
 using System.Configuration;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
+using ProofOfDeliveryAPI.Entities;
+using System.Linq;
 
 namespace ProofOfDeliveryAPI.Services
 {
@@ -13,6 +16,8 @@ namespace ProofOfDeliveryAPI.Services
     {
         Task<bool> WriteFile(IFormFile file);
         Task<FileStream> ReadFile(string fileName);
+        Task<IEnumerable<VehicleChecklist>> GetAllVehicleChecklists();
+        Task<VehicleChecklist> GetByFileName(string fileName);
     }
 
     public class VehicleService : IVehicleService
@@ -23,6 +28,15 @@ namespace ProofOfDeliveryAPI.Services
         {
             _connectionStrings = ConnectionStrings;       
         }
+
+        // vehicle data hardcoded for initial testing
+        private List<VehicleChecklist> _vehicles = new List<VehicleChecklist>
+        {
+            new VehicleChecklist { Id = 1, Date = new DateTime(2020, 02, 01), Registration = "AA70PABC", FileName = "test1" },
+            new VehicleChecklist { Id = 2, Date = new DateTime(2020, 02, 01), Registration = "BB70PABC", FileName = "test2" },
+            new VehicleChecklist { Id = 3, Date = new DateTime(2020, 02, 01), Registration = "CC70PABC", FileName = "test3" },
+            new VehicleChecklist { Id = 4, Date = new DateTime(2020, 02, 01), Registration = "DD70PABC", FileName = "test4" }
+        };
 
         public async Task<bool> WriteFile(IFormFile file)
         {
@@ -59,7 +73,7 @@ namespace ProofOfDeliveryAPI.Services
         {
             try
             {              
-                var path = await Task.Run(() => Path.GetFullPath(@"Data\uploads\checklists\" + fileName + ".pdf"));
+                var path = await Task.Run(() => Path.GetFullPath(_connectionStrings.Value.VehicleChecklistFilePath + fileName + ".pdf"));
                 if (!File.Exists(path)) return null;
                 return new FileStream(path, FileMode.Open, FileAccess.Read);
             }
@@ -67,6 +81,16 @@ namespace ProofOfDeliveryAPI.Services
             {
                 throw new Exception($"Error saving file: {e}");
             }
+        }
+
+        public async Task<IEnumerable<VehicleChecklist>> GetAllVehicleChecklists()
+        {
+            return _vehicles;
+        }
+
+        public async Task<VehicleChecklist> GetByFileName(string checkList)
+        {
+            return _vehicles.FirstOrDefault(fileName => fileName.Equals(checkList)); 
         }
     }
 }

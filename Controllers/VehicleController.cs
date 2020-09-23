@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +13,7 @@ namespace ProofOfDeliveryAPI.Controllers
     [Route("api/[controller]")]
     public class VehicleController : ControllerBase
     {
-      
+
         private IVehicleService _vehicleService;
         private readonly ConnectionStrings _connectionStrings;
 
@@ -36,7 +34,7 @@ namespace ProofOfDeliveryAPI.Controllers
             if (CheckIfPDF(file))
             {
                 isSaveSuccess = await _vehicleService.WriteFile(file);
-                if (!isSaveSuccess) return BadRequest(new {message = "Error saving file" });
+                if (!isSaveSuccess) return BadRequest(new { message = "Error saving file" });
             }
             else
             {
@@ -46,21 +44,41 @@ namespace ProofOfDeliveryAPI.Controllers
             return Ok($"File saved = {isSaveSuccess}");
         }
 
-        [AllowAnonymous] // remove after testing
-        // GET api/vehicle/checklist/{fileName}
+        //GET api/vehicle/checklist/{fileName}
+        //[HttpGet("checklist/{fileName}")]
+        //public async Task<IActionResult> ReadFile(string fileName)
+        //{
+        //    FileStream stream = await _vehicleService.ReadFile(fileName);
+        //    if (stream == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    else
+        //    {
+        //        var result = File(stream, "application/pdf", fileName + ".pdf");
+        //        return Ok(result.FileStream);
+        //    }
+        //}
+
+        [Authorize]
+        // GET api/vehicle/checklist{fileName}
         [HttpGet("checklist/{fileName}")]
-        public async Task<IActionResult> ReadFile(string fileName)   
+        public async Task<IActionResult> GetByFileName(string fileName)
         {
-            FileStream stream = await _vehicleService.ReadFile(fileName);
-            if (stream == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                return File(stream, "application/pdf", fileName + ".pdf");
-            }                                                                 
+            var vehicles = await _vehicleService.GetByFileName(fileName);
+            return Ok(vehicles);
         }
+
+        [Authorize]
+        // GET api/vehicle/checklists
+        [HttpGet("checklists")]
+        public async Task<IActionResult> GetAll()
+        {
+            var vehicles = await _vehicleService.GetAllVehicleChecklists();
+            return Ok(vehicles);
+        }
+
+
 
         private bool CheckIfPDF(IFormFile file)
         {

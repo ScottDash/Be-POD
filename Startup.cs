@@ -25,9 +25,18 @@ namespace ProofOfDeliveryAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
-            services.AddControllers();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllHeaders",
+                      builder =>
+                      {
+                          builder.AllowAnyOrigin()
+                                 .AllowAnyHeader()
+                                 .AllowAnyMethod();
+                      });
+            });
 
+            services.AddControllers();
 
             // Mapping the configuration
             var connectionSection = Configuration.GetSection("ConnectionStrings");
@@ -40,21 +49,22 @@ namespace ProofOfDeliveryAPI
             // Configure DI for application services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IVehicleService, VehicleService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            //services.AddScoped<IDeliveryService, DeliveryService>();
+            services.AddScoped<IOrderService, OrderService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors("AllowAllHeaders");
             app.UseRouting();
-
-            // Global cors policy
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-
+    
             app.UseAuthentication();
             app.UseAuthorization();
+         
+
+
 
             app.UseEndpoints(endpoints => endpoints.MapControllers());
         }

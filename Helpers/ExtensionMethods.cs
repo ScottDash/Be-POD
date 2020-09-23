@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http;
 using ProofOfDeliveryAPI.Entities;
 
 namespace ProofOfDeliveryAPI.Helpers
@@ -14,7 +13,7 @@ namespace ProofOfDeliveryAPI.Helpers
         }
         public static User WithoutPassword(this User user)
         {
-            user.Password = null;
+            user.Password = "*****";
             return user;
         }
         public static string RemoveWhitespace(string file)
