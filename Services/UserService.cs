@@ -23,13 +23,13 @@ namespace ProofOfDeliveryAPI.Services
         public readonly string TableName = "User";
         public UserService(IOptions<ConnectionStrings> connectionStrings)
         {
-            _connectionStrings = connectionStrings.Value;       
+            _connectionStrings = connectionStrings.Value;
         }
 
         // user data hardcoded for initial testing
         private List<User> _users = new List<User>
         {
-            new User { Id = 1, FirstName = "Test", LastName = "User", Username = "test", Password = "test", Admin = true }
+            new User { UserId = 1, FirstName = "Test", LastName = "User", Username = "test", Password = "test", Admin = true }
         };
 
         public async Task<User> Authenticate(string username, string password)
@@ -38,7 +38,7 @@ namespace ProofOfDeliveryAPI.Services
 
             List<User> userList = new List<User>();
 
-            string sql = $"SELECT Username, Password FROM [User] WHERE Username = '{username}' AND Password = '{password}'";
+            string sql = $"SELECT Username, Password FROM [{TableName}] WHERE Username = '{username}' AND Password = '{password}'";
 
             try
             {
@@ -55,7 +55,7 @@ namespace ProofOfDeliveryAPI.Services
                             while (await reader.ReadAsync())
                             {
                                 User users = new User();
-                                users.Username = reader.GetString(0);                             
+                                users.Username = reader.GetString(0);
                                 users.Password = reader.GetString(1);
                                 userList.Add(users);
                             }
@@ -71,13 +71,12 @@ namespace ProofOfDeliveryAPI.Services
             return null;
         }
 
-        public async Task<IEnumerable<User>> GetAllUsers( )
+        public async Task<IEnumerable<User>> GetAllUsers()
         {
             //return await Task.Run(() => _users.WithoutPasswords());
-            
             List<User> userList = new List<User>();
 
-            string sql = $"SELECT FirstName, LastName, UserName, Admin FROM [User]";
+            string sql = $"SELECT UserId, FirstName, LastName, UserName, Admin FROM [{TableName}]";
 
             try
             {
@@ -94,10 +93,11 @@ namespace ProofOfDeliveryAPI.Services
                             while (await reader.ReadAsync())
                             {
                                 User users = new User();
-                                users.FirstName = reader.GetString(0);
-                                users.LastName = reader.GetString(1);
-                                users.Username = reader.GetString(2);
-                                users.Admin = reader.GetBoolean(3);                           
+                                users.UserId = reader.GetInt32(0);
+                                users.FirstName = reader.GetString(1);
+                                users.LastName = reader.GetString(2);
+                                users.Username = reader.GetString(3);
+                                users.Admin = reader.GetBoolean(4);
                                 userList.Add(users);
                             }
                         }
@@ -109,18 +109,17 @@ namespace ProofOfDeliveryAPI.Services
                 throw e;
             }
             return userList;
-           
-    }
+        }
 
         public User AddUser(User user)
-        {       
+        {
             try
             {
                 using var connection = new SqlConnection(_connectionStrings.PODTestDb);
                 using (var command = connection.CreateCommand())
                 {
                     command.Connection = connection;
-                    command.CommandText = $"INSERT INTO [User] (FirstName, LastName, UserName, Password, Admin) Values (@getfirst, @getlast, @getuser, @getpassword, @getadmin)";
+                    command.CommandText = $"INSERT INTO [{TableName}] (FirstName, LastName, UserName, Password, Admin) Values (@getfirst, @getlast, @getuser, @getpassword, @getadmin)";
                     command.Parameters.Add("@getfirst", SqlDbType.VarChar).Value = user.FirstName;
                     command.Parameters.Add("@getlast", SqlDbType.VarChar).Value = user.LastName;
                     command.Parameters.Add("@getuser", SqlDbType.VarChar).Value = user.Username;

@@ -14,16 +14,14 @@ namespace ProofOfDeliveryAPI.Controllers
     public class UserController : ControllerBase
     {
         private IUserService _userService;
-        private readonly ConnectionStrings _connectionStrings;
-
-        public UserController(IOptions<ConnectionStrings> connectionStrings, IUserService userService)
+       
+        public UserController(IUserService userService)
         {
-            _connectionStrings = connectionStrings.Value;
             _userService = userService;
         }
 
         [AllowAnonymous]
-        // POST api/users/authenticate
+        // POST api/user/authenticate
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody]AuthenticateModel model)
         {
@@ -41,18 +39,16 @@ namespace ProofOfDeliveryAPI.Controllers
             return NotFound();
         }
 
-        // POST api/users/
-        [HttpPost]
+        // POST api/user
+       [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
-            if (user == null)
-                return BadRequest();
+            if (user == null) return BadRequest();
 
             if (user.FirstName == string.Empty || user.LastName == string.Empty)
             {
                 ModelState.AddModelError("Name", "The first or last name shouldn't be empty");
             }
-
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

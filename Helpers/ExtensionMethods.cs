@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using ProofOfDeliveryAPI.Entities;
 
 namespace ProofOfDeliveryAPI.Helpers
@@ -19,6 +20,12 @@ namespace ProofOfDeliveryAPI.Helpers
         public static string RemoveWhitespace(string file)
         {
             return Regex.Replace(file, @"\s+", "");
+        }
+
+        public static bool CheckIfPDF(IFormFile file)
+        {
+            var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
+            return (extension == ".pdf");
         }
     }
 }

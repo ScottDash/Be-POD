@@ -7,9 +7,9 @@ namespace ProofOfDeliveryAPI.Entities
 {
     public class Order
     {
-        public int Id { get; set; }
-        public int Packages { get; set; }
-        public int CustomerId { get; set; }
+        public int OrderId { get; set; }
+        public int PackageTotal { get; set; }
+        public string CustomerCode { get; set; }
         public int Ranking { get; set; }
     }
 }
