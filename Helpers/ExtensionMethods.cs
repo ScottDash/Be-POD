@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +27,10 @@ namespace ProofOfDeliveryAPI.Helpers
         {
             var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
             return (extension == ".pdf");
+        }
+        public static int? ToNullableInt32(this SqlInt32 value)
+        {
+            return value.IsNull ? (int?)null : value.Value;
         }
     }
 }

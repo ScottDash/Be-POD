@@ -8,8 +8,9 @@ namespace ProofOfDeliveryAPI.Entities
     public class Delivery
     {
         public int DeliveryId { get; set; }
-        public DateTime Date { get; set; }
-        public int [] OrderId { get; set; }
-        public int VehicleId { get; set; }
+        public int DeliveryNo { get; set; }
+        public DateTime? DeliveryDate { get; set; }
+        public int? VehicleId { get; set; }
+        public int? UserId { get; set; }
     }
 }

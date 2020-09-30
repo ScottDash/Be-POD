@@ -1,97 +1,41 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using ProofOfDeliveryAPI.Helpers;
-using Microsoft.Extensions.Options;
-using System.Collections.Generic;
+﻿using Microsoft.Extensions.Options;
 using ProofOfDeliveryAPI.Entities;
-using System.Linq;
-using System.Data.SqlClient;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProofOfDeliveryAPI.Services
 {
     public interface IVehicleService
     {
-        Task<bool> WriteFile(IFormFile file);
-        Task<FileStream> ReadFile(string fileName);
-        Task<IEnumerable<VehicleChecklist>> GetAllVehicleChecklists();
-        Task<bool> AddVehicleChecklist(string registration, string filename);
+        Task<IEnumerable<Vehicle>> GetAllVehicles();
+        public Vehicle AddVehicle(Vehicle vehicle);
     }
 
     public class VehicleService : IVehicleService
     {
         private readonly ConnectionStrings _connectionStrings;
-        public readonly string TableName = "VehicleChecklist";
+        public readonly string TableName = "Vehicle";
 
-        public VehicleService(IOptions<ConnectionStrings> ConnectionStrings)  
+        public VehicleService(IOptions<ConnectionStrings> ConnectionStrings)
         {
-            _connectionStrings = ConnectionStrings.Value;       
+            _connectionStrings = ConnectionStrings.Value;
         }
 
         // vehicle data hardcoded for initial testing
-        private List<VehicleChecklist> _vehicles = new List<VehicleChecklist>
+        private List<Vehicle> _users = new List<Vehicle>
         {
-            new VehicleChecklist { VehicleChecklistId = 1, Date = new DateTime(2020, 02, 01), Registration = "AA70PABC", FileName = "test1" },
-            new VehicleChecklist { VehicleChecklistId = 2, Date = new DateTime(2020, 02, 01), Registration = "BB70PABC", FileName = "test2" },
-            new VehicleChecklist { VehicleChecklistId = 3, Date = new DateTime(2020, 02, 01), Registration = "CC70PABC", FileName = "test3" },
-            new VehicleChecklist { VehicleChecklistId = 4, Date = new DateTime(2020, 02, 01), Registration = "DD70PABC", FileName = "test4" }
+            new Vehicle { VehicleId = 1, Registration = "AA70PABC"}
         };
 
-        public async Task<bool> WriteFile(IFormFile file)
+        public async Task<IEnumerable<Vehicle>> GetAllVehicles()
         {
-            bool isSaveSuccess = false;
-            string fileName = ExtensionMethods.RemoveWhitespace(file.FileName);
-            
-            try
-            {              
-                var pathBuilt = Path.Combine(Directory.GetCurrentDirectory(), _connectionStrings.VehicleChecklistFilePath);
+            List<Vehicle> vehicleList = new List<Vehicle>();
 
-                if (!Directory.Exists(pathBuilt))
-                {
-                    Directory.CreateDirectory(pathBuilt);
-                }
-
-                var path = Path.Combine(Directory.GetCurrentDirectory(), _connectionStrings.VehicleChecklistFilePath,
-                   fileName);
-
-                using (var stream = new FileStream(path, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-                isSaveSuccess = true;
-
-                
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Error saving file: {e}");
-            }
-            return isSaveSuccess;
-        }
-
-        public async Task<FileStream> ReadFile(string fileName)
-        {
-            try
-            {              
-                var path = await Task.Run(() => Path.GetFullPath(_connectionStrings.VehicleChecklistFilePath + fileName + ".pdf"));
-                if (!File.Exists(path)) return null;
-                return new FileStream(path, FileMode.Open, FileAccess.Read);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Error saving file: {e}");
-            }
-        }
-
-
-        public async Task<IEnumerable<VehicleChecklist>> GetAllVehicleChecklists()
-        {
-
-            List<VehicleChecklist> vehicleChecklist = new List<VehicleChecklist>();
-
-            string sql = $"SELECT VehicleChecklistId, Date, Registration, FileName FROM [{TableName}]";
+            string sql = $"SELECT VehicleId, Registration FROM [{TableName}]";
 
             try
             {
@@ -107,12 +51,10 @@ namespace ProofOfDeliveryAPI.Services
                         {
                             while (await reader.ReadAsync())
                             {
-                                VehicleChecklist checklist = new VehicleChecklist();
-                                checklist.VehicleChecklistId = reader.GetInt32(0);
-                                checklist.Date = reader.GetDateTime(1);
-                                checklist.Registration = reader.GetString(2);
-                                checklist.FileName = reader.GetString(3);
-                                vehicleChecklist.Add(checklist);
+                                Vehicle vehicles = new Vehicle();
+                                vehicles.VehicleId = reader.GetInt32(0);
+                                vehicles.Registration = reader.GetString(1);
+                                vehicleList.Add(vehicles);
                             }
                         }
                     }
@@ -122,24 +64,19 @@ namespace ProofOfDeliveryAPI.Services
             {
                 throw e;
             }
-            return vehicleChecklist;
+            return vehicleList;
         }
 
-
-        public async Task<bool> AddVehicleChecklist(string registration, string filename)
+        public Vehicle AddVehicle(Vehicle vehicle)
         {
-            var date = DateTime.Now.ToShortDateString();
-
             try
             {
                 using var connection = new SqlConnection(_connectionStrings.PODTestDb);
                 using (var command = connection.CreateCommand())
                 {
                     command.Connection = connection;
-                    command.CommandText = $"INSERT INTO [VehicleChecklist] (Date, Registration, FileName) Values (@gdate, @registration, @filename)";
-                    command.Parameters.Add("@gdate", SqlDbType.VarChar).Value = date;
-                    command.Parameters.Add("@registration", SqlDbType.VarChar).Value = registration;
-                    command.Parameters.Add("@filename", SqlDbType.VarChar).Value = filename;
+                    command.CommandText = $"INSERT INTO [{TableName}] (Registration) Values (@getreg)";
+                    command.Parameters.Add("@getreg", SqlDbType.VarChar).Value = vehicle.Registration;                 
                     command.Connection.Open();
                     command.ExecuteNonQuery();
                     command.Connection.Close();
@@ -149,7 +86,7 @@ namespace ProofOfDeliveryAPI.Services
             {
                 throw e;
             }
-            return true;
+            return vehicle;
         }
     }
 }

@@ -48,9 +48,10 @@ namespace ProofOfDeliveryAPI
 
             // Configure DI for application services
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IVehicleChecklistService, VehicleChecklistService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<ICustomerService, CustomerService>();
-            //services.AddScoped<IDeliveryService, DeliveryService>();
+            services.AddScoped<IDeliveryService, DeliveryService>();
             services.AddScoped<IOrderService, OrderService>();
         }
 

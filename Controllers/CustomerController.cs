@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using ProofOfDeliveryAPI.Entities;
 using ProofOfDeliveryAPI.Services;
 
 namespace ProofOfDeliveryAPI.Controllers
@@ -23,6 +24,18 @@ namespace ProofOfDeliveryAPI.Controllers
             _connectionStrings = connectionStrings.Value;
             _customerService = customerService;
         }
+
+        // POST api/customer
+        [HttpPost]
+        public async Task<IActionResult> CreateCustomer([FromBody] Customer customer)
+        {
+            if (customer == null) return BadRequest();
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            Customer createdCustomer = _customerService.AddCustomer(customer);
+            return Created("order", createdCustomer);
+        }
+
 
         // GET api/customer
         [HttpGet]
