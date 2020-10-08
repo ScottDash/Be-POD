@@ -14,7 +14,7 @@ namespace ProofOfDeliveryAPI.Controllers
     public class UserController : ControllerBase
     {
         private IUserService _userService;
-       
+
         public UserController(IUserService userService)
         {
             _userService = userService;
@@ -30,7 +30,7 @@ namespace ProofOfDeliveryAPI.Controllers
             return Ok(user);
         }
 
-        // GET api/users
+        // GET api/user
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -39,22 +39,56 @@ namespace ProofOfDeliveryAPI.Controllers
             return NotFound();
         }
 
+        // Get api/user/{userId}
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserDetails(int userId)
+        {
+            var users = await _userService.GetUserById(userId);
+            if (users != null) return Ok(users);
+            return NotFound();
+        }
+
         // POST api/user
-       [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] User user)
         {
             if (user == null) return BadRequest();
-
             if (user.FirstName == string.Empty || user.LastName == string.Empty)
             {
                 ModelState.AddModelError("Name", "The first or last name shouldn't be empty");
             }
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            User createdUser = _userService.AddUser(user);            
+            User createdUser = await _userService.AddUser(user);
             return Created("user", createdUser);
+        }
+
+        // PUT api/user
+        [HttpPut]
+        public async Task<IActionResult> UpdateUser([FromBody] User user)
+        {
+            if (user == null) return BadRequest();
+            if (user.FirstName == string.Empty || user.LastName == string.Empty)
+            {
+                ModelState.AddModelError("Name", "The first or last name shouldn't be empty");
+            }
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var userToUpdate = await _userService.GetUserById(user.UserId);
+            if (userToUpdate == null) return NotFound();
+            User updatedUser = await _userService.UpdateUser(user);
+            return Accepted("user", updatedUser);
+        }
+
+        // DELETE api/user/{userId}
+        [HttpDelete("{userId}")]
+        public async Task<IActionResult> DeleteUser(int userId)
+        {
+            var foundUser = await _userService.GetUserById(userId);
+            if (foundUser == null) return NotFound();
+            var deletedUser = _userService.DeleteUser(foundUser);
+            return Accepted("user", deletedUser);
         }
     }
 }
+

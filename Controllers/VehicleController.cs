@@ -29,7 +29,6 @@ namespace ProofOfDeliveryAPI.Controllers
             return Created("vehicle", createdVehicle);
         }
 
-
         // GET api/vehicle
         [HttpGet]
         public async Task<IActionResult> GetAllVehicles()

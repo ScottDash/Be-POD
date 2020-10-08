@@ -12,7 +12,7 @@ namespace ProofOfDeliveryAPI.Entities
         public int PackageTotal { get; set; }
         public string CustomerCode { get; set; }
         public int Ranking { get; set; }
-        public DateTime ShippingDate { get; set; }
+        public DateTime? ShippingDate { get; set; }
         public int? DeliveryId { get; set; }
     }
 }
